@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-var users map[uint]User // users by ID
+var users map[uint]User // users by ID - NOT THREADSAFE
 
 func main() {
 	users = make(map[uint]User)
