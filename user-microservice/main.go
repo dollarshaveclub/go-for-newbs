@@ -6,12 +6,20 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
-var users map[uint]User // users by ID - NOT THREADSAFE
+type usersMap struct {
+	sync.RWMutex
+	users map[uint]User // users by ID
+}
+
+var users usersMap
 
 func main() {
-	users = make(map[uint]User)
+	users = usersMap{
+		users: make(map[uint]User),
+	}
 
 	http.HandleFunc("/", getHandler)
 	http.HandleFunc("/set", setHandler)
@@ -31,7 +39,9 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	user, ok := users[uint(idnum)]
+	users.RLock()
+	defer users.Unlock()
+	user, ok := users.users[uint(idnum)]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -58,7 +68,9 @@ func setHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	users[user.ID] = user
+	users.Lock()
+	defer users.Unlock()
+	users.users[user.ID] = user
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -74,9 +86,11 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if _, ok := users[uint(idnum)]; !ok {
+	users.Lock()
+	defer users.Unlock()
+	if _, ok := users.users[uint(idnum)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	delete(users, uint(idnum))
+	delete(users.users, uint(idnum))
 }
