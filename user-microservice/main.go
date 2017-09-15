@@ -40,7 +40,7 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	users.RLock()
-	defer users.Unlock()
+	defer users.RUnlock()
 	user, ok := users.users[uint(idnum)]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
