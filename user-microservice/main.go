@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+
+	"github.com/gorilla/mux"
 )
 
 type usersMap struct {
@@ -21,10 +23,11 @@ func main() {
 		users: make(map[uint]User),
 	}
 
-	http.HandleFunc("/", getHandler)
-	http.HandleFunc("/set", setHandler)
-	http.HandleFunc("/delete", deleteHandler)
-	fmt.Println(http.ListenAndServe("0.0.0.0:8088", nil))
+	r := mux.NewRouter()
+	r.HandleFunc("/", getHandler).Methods("GET")
+	r.HandleFunc("/set", setHandler).Methods("POST")
+	r.HandleFunc("/delete", deleteHandler).Methods("DELETE")
+	fmt.Println(http.ListenAndServe("0.0.0.0:8088", r))
 }
 
 func getHandler(w http.ResponseWriter, r *http.Request) {
