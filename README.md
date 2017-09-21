@@ -36,7 +36,7 @@ In this project, a user microservice will be setup and tested using [go](https:/
    ```
 3. Then build
    ```shell
-   .user-moicroservice
+   .user-microservice
    ```
 4. Create a user
    ```curl
